@@ -48,11 +48,9 @@ app.get('/api/hello', function(req, res) {
 // POST
 app.post('/api/shorturl', async (req, res) => {
 
-  // url check (http/https)
   const url = req.body.url;
-  console.log("Incoming body:", req.body);
-  console.log("Received URL:", url);
 
+  // url check (http/https)
   if (!url || !(url.startsWith("http://") || url.startsWith("https://"))) {
     return res.json({ error: "invalid url" });
   }
@@ -65,8 +63,6 @@ app.post('/api/shorturl', async (req, res) => {
   } catch (err) {
     return res.json({ error: "invalid url" });
   } 
-
-  console.log(hostname);
 
   const promisifiedDnsLookup = promisify(dns.lookup);
   try{
@@ -90,8 +86,19 @@ app.post('/api/shorturl', async (req, res) => {
 })
 
 // GET
-app.get('/api/shorturl/:id', (req, res) => {
+app.get('/api/shorturl/:id', async (req, res) => {
   // db call with :id, redirect to original_url
+  const short_url = req.params.id
+  const response = await Url.findOne({short_url})
+
+  if(!response){
+    res.json({
+      error: "invalid url"
+    })
+    return;
+  }
+
+  res.redirect(response.original_url);
   
 })
 
